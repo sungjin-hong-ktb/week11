@@ -33,4 +33,4 @@ class UserCreate(BaseModel):
         return v
 
 class UserUpdate(BaseModel):
-    nickname: str | None = Field(..., min_length=1, max_length=10)
+    nickname: str | None = Field(None, min_length=1, max_length=10)
