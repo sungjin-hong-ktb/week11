@@ -13,6 +13,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     nickname: str = Field(..., min_length=1, max_length=10)
     password: str = Field(..., min_length=8, max_length=20)
+    password_confirm: str = Field(..., min_length=8, max_length=20)
 
     # Password 유효성 검사 (대문자, 소문자, 숫자, 특수문자 각각 최소 1개 포함 여부 검사)
     @field_validator('password')
@@ -30,6 +31,14 @@ class UserCreate(BaseModel):
         # 특수문자
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
             raise ValueError("특수문자를 최소 1개 포함해야 합니다.")
+        return v
+
+    # 비밀번호 일치 검사
+    @field_validator('password_confirm')
+    @classmethod
+    def passwords_match(cls, v, info):
+        if 'password' in info.data and v != info.data['password']:
+            raise ValueError("비밀번호가 일치하지 않습니다.")
         return v
 
 class UserUpdate(BaseModel):
