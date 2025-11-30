@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user_model import Users
 from app.schemas.user_schema import UserCreate, UserUpdate
+from app.utils.security import hash_password
 
 
 class UserController:
@@ -33,7 +34,7 @@ class UserController:
         new_user = Users(
             email=user_data.email,
             nickname=user_data.nickname,
-            hashed_password=user_data.password  # 나중에 해싱 추가 예정
+            hashed_password=hash_password(user_data.password)
         )
         self.db.add(new_user)
         self.db.commit()
