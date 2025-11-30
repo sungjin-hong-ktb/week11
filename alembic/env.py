@@ -8,7 +8,7 @@ from alembic import context
 from app.database import Base
 from app.models.user_model import Users
 from app.models.post_model import Post
-from app.models.comment_model import Comment  # Import all models to register them with Base
+from app.models.comment_model import Comment  
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
