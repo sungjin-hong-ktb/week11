@@ -13,7 +13,6 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    # created_at: datetime = datetime.now()
     pass
 
 
