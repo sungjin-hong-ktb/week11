@@ -210,7 +210,6 @@ uvicorn main:app --reload
 - **OOP 기반 Controller**: 모든 컨트롤러를 클래스로 구현
 - **계층 분리**: Router → Controller → Model
 - **의존성 주입**: FastAPI Depends를 통한 DB 세션 관리
-- **PEP 8 준수**: 일관된 코드 스타일
 
 ## 개발 환경
 
