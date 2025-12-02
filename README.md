@@ -4,8 +4,8 @@ FastAPI를 사용한 커뮤니티 백엔드 API 프로젝트
 
 ## 기술 스택
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.122.0-009688)
+![Python](https://img.shields.io/badge/Python-3.13+-3776AB)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115.5-009688)
 ![SQLite](https://img.shields.io/badge/SQLite-3-003B57)
 
 - **SQLAlchemy** 2.0.44 - ORM
