@@ -4,9 +4,9 @@ FastAPI를 사용한 커뮤니티 백엔드 API 프로젝트
 
 ## 기술 스택
 
-![Python](https://img.shields.io/badge/Python-3.13+-3776AB)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115.5-009688)
-![SQLite](https://img.shields.io/badge/SQLite-3-003B57)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115.5-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.13+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColo=white)
 
 - **SQLAlchemy** 2.0.44 - ORM
 - **Alembic** 1.17.2 - 데이터베이스 마이그레이션
