@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.models.user_model import Users
 from app.schemas.user_schema import UserCreate, UserUpdate
@@ -36,9 +37,17 @@ class UserController:
             nickname=user_data.nickname,
             hashed_password=hash_password(user_data.password)
         )
-        self.db.add(new_user)
-        self.db.commit()
-        self.db.refresh(new_user)
+        
+        try:
+            self.db.add(new_user)
+            self.db.commit()
+            self.db.refresh(new_user)
+        except IntegrityError:
+            self.db.rollback()
+            raise ValueError("유효하지 않은 데이터입니다")
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise RuntimeError("데이터베이스 오류가 발생했습니다")
 
         return new_user
 
@@ -82,11 +91,8 @@ class UserController:
         Raises:
             ValueError: 닉네임이 이미 사용 중인 경우
         """
-        user = (
-            self.db.query(Users)
-            .filter(Users.id == user_id)
-            .first()
-        )
+        user = self.get_user_by_id(user_id)
+        
         if not user:
             return None
 
@@ -106,8 +112,16 @@ class UserController:
 
             user.nickname = user_data.nickname
 
-        self.db.commit()
-        self.db.refresh(user)
+        try:
+            self.db.commit()
+            self.db.refresh(user)
+        except IntegrityError:
+            self.db.rollback()
+            raise ValueError("유효하지 않은 데이터입니다")
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise RuntimeError("데이터베이스 오류가 발생했습니다")
+        
         return user
 
     def delete_user(self, user_id: int) -> Users | None:
@@ -125,6 +139,11 @@ class UserController:
             .first()
         )
         if user:
-            self.db.delete(user)
-            self.db.commit()
+            try:
+                self.db.delete(user)
+                self.db.commit()
+            except SQLAlchemyError:
+                self.db.rollback()
+                raise RuntimeError("데이터베이스 오류가 발생했습니다")
+            
         return user

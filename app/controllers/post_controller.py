@@ -1,7 +1,10 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.models.post_model import Post
+from app.controllers.user_controller import UserController
 from app.schemas.post_schema import PostCreate, PostUpdate
+from app.schemas.user_schema import User
 
 
 class PostController:
@@ -24,15 +27,26 @@ class PostController:
         Returns:
             Post: 생성된 게시글
         """
+        user = UserController(self.db).get_user_by_id(author_id)
+        if not user:
+            raise ValueError("작성자가 존재하지 않습니다")
+
         new_post = Post(
             title=post_data.title,
             content=post_data.content,
             image_url=post_data.image_url,
             author_id=author_id
         )
-        self.db.add(new_post)
-        self.db.commit()
-        self.db.refresh(new_post)
+        try:
+            self.db.add(new_post)
+            self.db.commit()
+            self.db.refresh(new_post)
+        except IntegrityError:
+            self.db.rollback()
+            raise ValueError("유효하지 않은 데이터입니다")
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise RuntimeError("데이터베이스 오류가 발생했습니다")
         return new_post
 
     def get_posts(
@@ -72,8 +86,12 @@ class PostController:
         )
         if post:
             post.view_count += 1
-            self.db.commit()
-            self.db.refresh(post)
+            try:
+                self.db.commit()
+                self.db.refresh(post)
+            except SQLAlchemyError:
+                self.db.rollback()
+                raise RuntimeError("데이터베이스 오류가 발생했습니다")
         return post
 
     def update_post(
@@ -115,8 +133,16 @@ class PostController:
         if post_data.image_url is not None:
             post.image_url = post_data.image_url
 
-        self.db.commit()
-        self.db.refresh(post)
+        try:
+            self.db.commit()
+            self.db.refresh(post)
+        except IntegrityError:
+            self.db.rollback()
+            raise ValueError("유효하지 않은 데이터입니다")
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise RuntimeError("데이터베이스 오류가 발생했습니다")
+        
         return post
 
     def delete_post(
@@ -147,7 +173,14 @@ class PostController:
         # 작성자 확인
         if post.author_id != author_id:
             raise ValueError("게시글 삭제 권한이 없습니다")
+        try:
+            self.db.delete(post)
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            raise ValueError("유효하지 않은 데이터입니다")
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise RuntimeError("데이터베이스 오류가 발생했습니다")
 
-        self.db.delete(post)
-        self.db.commit()
         return post
