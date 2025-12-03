@@ -37,6 +37,7 @@ class PostController:
             image_url=post_data.image_url,
             author_id=author_id
         )
+        
         try:
             self.db.add(new_post)
             self.db.commit()
@@ -86,12 +87,7 @@ class PostController:
         )
         if post:
             post.view_count += 1
-            try:
-                self.db.commit()
-                self.db.refresh(post)
-            except SQLAlchemyError:
-                self.db.rollback()
-                raise RuntimeError("데이터베이스 오류가 발생했습니다")
+            
         return post
 
     def update_post(
@@ -113,11 +109,8 @@ class PostController:
         Raises:
             ValueError: 작성자가 아닌 경우
         """
-        post = (
-            self.db.query(Post)
-            .filter(Post.id == post_id)
-            .first()
-        )
+        post = self.get_post_by_id(post_id)
+        
         if not post:
             return None
 
@@ -162,17 +155,15 @@ class PostController:
         Raises:
             ValueError: 작성자가 아닌 경우
         """
-        post = (
-            self.db.query(Post)
-            .filter(Post.id == post_id)
-            .first()
-        )
+        post = self.get_post_by_id(post_id)
+        
         if not post:
             return None
 
         # 작성자 확인
         if post.author_id != author_id:
             raise ValueError("게시글 삭제 권한이 없습니다")
+        
         try:
             self.db.delete(post)
             self.db.commit()

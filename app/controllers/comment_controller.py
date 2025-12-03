@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.models.comment_model import Comment
+from app.controllers.post_controller import PostController
 from app.controllers.user_controller import UserController
 from app.schemas.comment_schema import CommentCreate, CommentUpdate
 
@@ -111,12 +112,8 @@ class CommentController:
         Raises:
             ValueError: 작성자가 아닌 경우
         """
-        comment = (
-            self.db.query(Comment)
-            .filter(Comment.id == comment_id)
-            .first()
-        )
-                
+        comment = self.get_comment_by_id(comment_id)
+
         if not comment:
             return None
         
@@ -124,9 +121,9 @@ class CommentController:
         if comment.author_id != author_id:
             raise ValueError("댓글 수정 권한이 없습니다")
 
-        # 수정
         if comment_data.content:
             comment.content = comment_data.content
+            
         try:
             self.db.commit()
             self.db.refresh(comment)
@@ -156,17 +153,15 @@ class CommentController:
         Raises:
             ValueError: 작성자가 아닌 경우
         """
-        comment = (
-            self.db.query(Comment)
-            .filter(Comment.id == comment_id)
-            .first()
-        )
+        comment = self.get_comment_by_id(comment_id)
+        
         if not comment:
             return None
 
         # 작성자 확인
         if comment.author_id != author_id:
             raise ValueError("댓글 삭제 권한이 없습니다")
+        
         try:
             self.db.delete(comment)
             self.db.commit()

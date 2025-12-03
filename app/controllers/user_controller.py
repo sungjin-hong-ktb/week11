@@ -96,7 +96,7 @@ class UserController:
         if not user:
             return None
 
-        # nickname이 제공된 경우에만 중복 체크 및 업데이트
+        # 닉네임 중복 체크
         if user_data.nickname:
             existing_nickname = (
                 self.db.query(Users)
@@ -133,11 +133,8 @@ class UserController:
         Returns:
             Users | None: 삭제된 회원 정보 또는 None
         """
-        user = (
-            self.db.query(Users)
-            .filter(Users.id == user_id)
-            .first()
-        )
+        user = self.get_user_by_id(user_id)
+        
         if user:
             try:
                 self.db.delete(user)
