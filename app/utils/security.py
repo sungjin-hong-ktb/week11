@@ -1,7 +1,7 @@
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
-# bcrypt 해싱 컨텍스트
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+ph = PasswordHasher()
 
 
 def hash_password(password: str) -> str:
@@ -13,7 +13,7 @@ def hash_password(password: str) -> str:
     Returns:
         str: 해싱된 비밀번호
     """
-    return pwd_context.hash(password)
+    return ph.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -26,4 +26,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         bool: 비밀번호 일치 여부
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        ph.verify(hashed_password, plain_password)
+        return True
+    except VerifyMismatchError:
+        return False
