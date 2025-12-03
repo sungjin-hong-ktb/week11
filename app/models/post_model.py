@@ -12,7 +12,7 @@ class Post(Base):
     title = Column(String(100), nullable=False)
     content = Column(Text, nullable=False)
     image_url = Column(String(500), nullable=True)
-    created_at = Column(DateTime, default=datetime.now().replace(microsecond=0), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now().replace(microsecond=0), nullable=False)
     view_count = Column(Integer, default=0, nullable=False)
     like_count = Column(Integer, default=0, nullable=False)
     # 외래키: 작성자

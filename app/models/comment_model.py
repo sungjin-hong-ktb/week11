@@ -10,7 +10,7 @@ class Comment(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now().replace(microsecond=0), nullable=False)
     # 외래키: 게시글
     post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
     # 외래키: 작성자
