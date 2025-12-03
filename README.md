@@ -80,9 +80,24 @@ assignment/
 
 ### 1. 가상환경 생성 및 활성화
 
+#### 방법 1: venv 사용
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
+```
+
+#### 방법 2: conda 사용
+
+```bash
+# 새로운 가상환경 생성 (Python 3.13 사용)
+conda create -n community-backend python=3.13
+
+# 가상환경 활성화
+conda activate community-backend
+
+# 가상환경 비활성화 (필요시)
+conda deactivate
 ```
 
 ### 2. 패키지 설치
