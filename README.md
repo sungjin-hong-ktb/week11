@@ -4,7 +4,7 @@ FastAPI를 사용한 커뮤니티 백엔드 API 프로젝트
 
 ## 기술 스택
 
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115.5-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.120.0-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.13+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColo=white)
 
@@ -12,7 +12,7 @@ FastAPI를 사용한 커뮤니티 백엔드 API 프로젝트
 - **Alembic** 1.17.2 - 데이터베이스 마이그레이션
 - **Pydantic** 2.12.5 - 데이터 검증
 - **Uvicorn** 0.34.0 - ASGI 서버
-- **Passlib** 1.7.4 - 비밀번호 해싱 (bcrypt)
+- **Argon2-cffi** - 비밀번호 해싱 (Argon2)
 
 ## 프로젝트 구조
 
@@ -59,7 +59,7 @@ assignment/
 - 회원정보 수정 (닉네임)
 - 회원 탈퇴
 - 비밀번호 검증: 대문자, 소문자, 숫자, 특수문자 각 1개 이상 필수
-- 비밀번호 해싱: bcrypt 알고리즘 사용
+- 비밀번호 해싱: Argon2 알고리즘 사용
 
 ### 게시글 (Posts)
 - 게시글 작성 (제목, 내용, 이미지 경로)
@@ -142,7 +142,7 @@ uvicorn main:app --reload
 | id | Integer | Primary Key |
 | email | String | 이메일 (고유) |
 | nickname | String | 닉네임 |
-| hashed_password | String | 비밀번호 (bcrypt 해시) |
+| hashed_password | String | 비밀번호 (Argon2 해시) |
 
 ### Posts
 | 컬럼 | 타입 | 설명 |
@@ -195,7 +195,7 @@ uvicorn main:app --reload
 
 ### 로그인
 - **이메일**: 유효한 이메일 형식
-- **비밀번호**: bcrypt를 통한 해시 비교
+- **비밀번호**: Argon2를 통한 해시 비교
 
 ### 게시글
 - **제목**: 1~100자
@@ -213,5 +213,5 @@ uvicorn main:app --reload
 
 ## 개발 환경
 
-- Python 3.11+
+- Python 3.13+
 - SQLite 3
