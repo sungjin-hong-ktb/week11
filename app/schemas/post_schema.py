@@ -22,13 +22,13 @@ class PostUpdate(BaseModel):
     image_url: str | None = None
 
 
-# 목록 조회용
 class Post(PostBase):
     id: int
     author_id: int
     created_at: datetime
     like_count: int
     view_count: int
+    comment_count: int = 0
 
     class Config:
         from_attributes = True
