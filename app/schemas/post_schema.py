@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, TYPE_CHECKING
 from datetime import datetime
 
@@ -13,13 +13,14 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    pass
+    author_id: int = Field(..., gt=0, description="작성자 ID")
 
 
 class PostUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=100)
     content: str | None = Field(None, min_length=1)
     image_url: str | None = None
+    author_id: int = Field(..., gt=0, description="작성자 ID")
 
 
 class Post(PostBase):
@@ -30,8 +31,7 @@ class Post(PostBase):
     view_count: int
     comment_count: int = 0
 
-    class Config:
-        from_attributes = True
+    model_config: ConfigDict = ConfigDict(from_attributes=True)
 
 
 # 상세 조회용 (댓글 포함)

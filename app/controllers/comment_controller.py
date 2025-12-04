@@ -72,6 +72,7 @@ class CommentController:
         return (
             self.db.query(Comment)
             .filter(Comment.post_id == post_id)
+            .order_by(Comment.created_at.asc())
             .offset(skip)
             .limit(limit)
             .all()

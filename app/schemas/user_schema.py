@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 import re
 
 class User(BaseModel):
@@ -6,8 +6,7 @@ class User(BaseModel):
     email: EmailStr
     nickname: str
 
-    class Config:
-        from_attributes = True
+    model_config: ConfigDict = ConfigDict(from_attributes=True)
 
 class UserCreate(BaseModel):
     email: EmailStr

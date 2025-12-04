@@ -11,7 +11,11 @@ router = APIRouter(
 )
 
 
-@router.post("/login", response_model=LoginResponse, description="이메일과 비밀번호로 로그인")
+@router.post(
+    "/login",
+    response_model=LoginResponse,
+    description="이메일과 비밀번호로 로그인"
+)
 def login(
     credentials: LoginRequest,
     db: Session = Depends(get_db)
@@ -38,7 +42,11 @@ def login(
         )
 
 
-@router.post("/logout", status_code=status.HTTP_200_OK, description="로그아웃")
+@router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK,
+    description="로그아웃"
+)
 def logout():
     """로그아웃
 

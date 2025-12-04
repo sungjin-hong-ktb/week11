@@ -72,6 +72,7 @@ class PostController:
             )
             .outerjoin(Comment, Post.id == Comment.post_id)
             .group_by(Post.id)
+            .order_by(Post.created_at.desc())
             .offset(skip)
             .limit(limit)
             .all()
