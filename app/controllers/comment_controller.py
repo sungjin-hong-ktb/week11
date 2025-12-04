@@ -7,8 +7,6 @@ from app.schemas.comment_schema import CommentCreate, CommentUpdate
 
 
 class CommentController:
-    """댓글 관련 비즈니스 로직을 처리하는 컨트롤러"""
-
     def __init__(self, db: Session):
         self.db = db
 

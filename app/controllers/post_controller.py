@@ -9,8 +9,6 @@ from app.schemas.post_schema import PostCreate, PostUpdate
 
 
 class PostController:
-    """게시글 관련 비즈니스 로직을 처리하는 컨트롤러"""
-
     def __init__(self, db: Session):
         self.db = db
 

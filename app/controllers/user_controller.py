@@ -7,8 +7,6 @@ from app.utils.security import hash_password
 
 
 class UserController:
-    """사용자 관련 비즈니스 로직을 처리하는 컨트롤러"""
-
     def __init__(self, db: Session):
         self.db = db
 
