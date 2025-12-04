@@ -49,13 +49,19 @@ def get_comment(
 def update_comment(
     comment_id: int = Path(..., description="수정할 댓글 ID"),
     comment_data: CommentUpdate = Body(...),
+    x_user_id: int = Header(
+        ...,
+        alias="X-User-ID",
+        description="작성자 ID (권한 확인용)"
+    ),
     db: Session = Depends(get_db)
 ):
     """댓글 수정
 
     Args:
         comment_id (int): 댓글 ID
-        comment_data (CommentUpdate): 수정할 댓글 정보 (author_id 포함)
+        comment_data (CommentUpdate): 수정할 댓글 정보
+        x_user_id (int): 헤더로 전달된 작성자 ID (권한 확인용)
         db (Session): 데이터베이스 세션
 
     Returns:
@@ -69,7 +75,7 @@ def update_comment(
         comment = controller.update_comment(
             comment_id,
             comment_data,
-            comment_data.author_id
+            x_user_id
         )
         if not comment:
             raise HTTPException(

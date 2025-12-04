@@ -13,14 +13,13 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    author_id: int = Field(..., gt=0, description="작성자 ID")
+    pass  # author_id는 Header로 전달
 
 
 class PostUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=100)
     content: str | None = Field(None, min_length=1)
     image_url: str | None = None
-    author_id: int = Field(..., gt=0, description="작성자 ID")
 
 
 class Post(PostBase):

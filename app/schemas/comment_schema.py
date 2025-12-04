@@ -7,13 +7,11 @@ class CommentBase(BaseModel):
 
 
 class CommentCreate(CommentBase):
-    post_id: int = Field(..., gt=0, description="게시글 ID")
-    author_id: int = Field(..., gt=0, description="작성자 ID")
+    post_id: int = Field(..., description="게시글 ID")
 
 
 class CommentUpdate(BaseModel):
     content: str | None = Field(None, min_length=1)
-    author_id: int = Field(..., gt=0, description="작성자 ID (권한 확인용)")
 
 
 class Comment(CommentBase):

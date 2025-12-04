@@ -21,19 +21,25 @@ router = APIRouter(
 )
 def create_post(
     post_data: PostCreate = Body(...),
+    x_user_id: int = Header(
+        ...,
+        alias="X-User-ID",
+        description="작성자 ID"
+    ),
     db: Session = Depends(get_db)
 ):
     """게시글 생성
 
     Args:
-        post_data (PostCreate): 생성할 게시글 정보 (author_id 포함)
+        post_data (PostCreate): 생성할 게시글 정보
+        x_user_id (int): 헤더로 전달된 작성자 ID
         db (Session): 데이터베이스 세션
 
     Returns:
         Post: 생성된 게시글
     """
     controller = PostController(db)
-    return controller.create_post(post_data, post_data.author_id)
+    return controller.create_post(post_data, x_user_id)
 
 
 @router.get(
@@ -99,13 +105,19 @@ def get_post(
 def update_post(
     post_id: int = Path(..., description="수정할 게시글 ID"),
     post_data: PostUpdate = Body(...),
+    x_user_id: int = Header(
+        ...,
+        alias="X-User-ID",
+        description="작성자 ID (권한 확인용)"
+    ),
     db: Session = Depends(get_db)
 ):
     """게시글 수정
 
     Args:
         post_id (int): 게시글 ID
-        post_data (PostUpdate): 수정할 게시글 정보 (author_id 포함)
+        post_data (PostUpdate): 수정할 게시글 정보
+        x_user_id (int): 헤더로 전달된 작성자 ID (권한 확인용)
         db (Session): 데이터베이스 세션
 
     Returns:
@@ -119,7 +131,7 @@ def update_post(
         post = controller.update_post(
             post_id,
             post_data,
-            post_data.author_id
+            x_user_id
         )
         if not post:
             raise HTTPException(
@@ -208,13 +220,19 @@ def get_post_comments(
 def create_post_comment(
     post_id: int = Path(..., gt=0, description="게시글 ID"),
     comment_data: CommentCreate = Body(...),
+    x_user_id: int = Header(
+        ...,
+        alias="X-User-ID",
+        description="작성자 ID"
+    ),
     db: Session = Depends(get_db)
 ):
     """게시글에 댓글 생성
 
     Args:
         post_id (int): 게시글 ID
-        comment_data (CommentCreate): 생성할 댓글 정보 (author_id 포함)
+        comment_data (CommentCreate): 생성할 댓글 정보
+        x_user_id (int): 헤더로 전달된 작성자 ID
         db (Session): 데이터베이스 세션
 
     Returns:
@@ -225,5 +243,5 @@ def create_post_comment(
     return controller.create_comment(
         comment_data,
         post_id,
-        comment_data.author_id
+        x_user_id
     )
