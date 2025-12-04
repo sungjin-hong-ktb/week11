@@ -11,7 +11,7 @@ class AuthController:
     def __init__(self, db: Session):
         self.db = db
 
-    async def login(self, credentials: LoginRequest) -> LoginResponse:
+    def login(self, credentials: LoginRequest) -> LoginResponse:
         """로그인
 
         Args:
