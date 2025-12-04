@@ -62,18 +62,20 @@ assignment/
 - 비밀번호 해싱: Argon2 알고리즘 사용
 
 ### 게시글 (Posts)
-- 게시글 작성 (제목, 내용, 이미지 경로)
-- 게시글 조회 (목록, 상세)
-- 게시글 수정 (작성자만 가능)
-- 게시글 삭제 (작성자만 가능)
-- 조회수 자동 증가
-- 댓글 목록 포함
+- 게시글 작성 (제목, 내용, 이미지 경로, author_id)
+- 게시글 조회
+  - 목록: 댓글 개수 포함
+  - 상세: 댓글 목록 포함, 조회수 자동 증가
+- 게시글 수정 (작성자만 가능, Body에 author_id)
+- 게시글 삭제 (작성자만 가능, Header X-User-ID)
+- **RESTful 댓글 엔드포인트**: `/posts/{id}/comments`
 
 ### 댓글 (Comments)
-- 댓글 작성
-- 댓글 조회
-- 댓글 수정 (작성자만 가능)
-- 댓글 삭제 (작성자만 가능)
+- 게시글의 댓글 목록 조회 (`GET /posts/{post_id}/comments`)
+- 게시글에 댓글 작성 (`POST /posts/{post_id}/comments`)
+- 특정 댓글 조회 (`GET /comments/{comment_id}`)
+- 댓글 수정 (작성자만 가능, Body에 author_id)
+- 댓글 삭제 (작성자만 가능, Header X-User-ID)
 
 
 ## 설치 및 실행
@@ -132,22 +134,22 @@ uvicorn main:app --reload
 - `POST /api/users/` - 회원가입
 - `GET /api/users/` - 전체 회원 조회
 - `GET /api/users/{user_id}` - 회원 상세 조회
-- `PUT /api/users/{user_id}` - 회원정보 수정
-- `DELETE /api/users/{user_id}` - 회원 탈퇴
+- `PUT /api/users/{user_id}` - 회원정보 수정 (본인만 가능)
+- `DELETE /api/users/{user_id}` - 회원 탈퇴 (본인만 가능)
 
 ### Posts
 - `POST /posts/` - 게시글 작성
-- `GET /posts/` - 게시글 목록 조회
-- `GET /posts/{post_id}` - 게시글 상세 조회
-- `PUT /posts/{post_id}` - 게시글 수정
-- `DELETE /posts/{post_id}` - 게시글 삭제
+- `GET /posts/` - 게시글 목록 조회 (댓글 개수 포함)
+- `GET /posts/{post_id}` - 게시글 상세 조회 (댓글 목록 포함, 조회수 증가)
+- `PUT /posts/{post_id}` - 게시글 수정 (작성자만 가능)
+- `DELETE /posts/{post_id}` - 게시글 삭제 (작성자만 가능)
+- `GET /posts/{post_id}/comments` - 게시글의 댓글 목록 조회
+- `POST /posts/{post_id}/comments` - 게시글에 댓글 작성
 
 ### Comments
-- `POST /comments/` - 댓글 작성
-- `GET /comments/?post_id={post_id}` - 댓글 목록 조회
-- `GET /comments/{comment_id}` - 댓글 조회
-- `PUT /comments/{comment_id}` - 댓글 수정
-- `DELETE /comments/{comment_id}` - 댓글 삭제
+- `GET /comments/{comment_id}` - 특정 댓글 조회
+- `PUT /comments/{comment_id}` - 댓글 수정 (작성자만 가능)
+- `DELETE /comments/{comment_id}` - 댓글 삭제 (작성자만 가능)
 
 ## 데이터베이스 스키마
 
@@ -225,6 +227,7 @@ uvicorn main:app --reload
 - **OOP 기반 Controller**: 모든 컨트롤러를 클래스로 구현
 - **계층 분리**: Router → Controller → Model
 - **의존성 주입**: FastAPI Depends를 통한 DB 세션 관리
+- **RESTful API**: 리소스 간 계층적 관계를 URL로 표현 (`/posts/{id}/comments`)
 
 ## 개발 환경
 
