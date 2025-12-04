@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy import func
 
 from app.models.post_model import Post
+from app.models.comment_model import Comment
 from app.controllers.user_controller import UserController
 from app.schemas.post_schema import PostCreate, PostUpdate
-from app.schemas.user_schema import User
 
 
 class PostController:
@@ -64,18 +65,32 @@ class PostController:
         Returns:
             list[Post]: 게시글 리스트
         """
-        return (
-            self.db.query(Post)
+        results = (
+            self.db.query(
+                Post,
+                func.count(Comment.id).label('comment_count')
+            )
+            .outerjoin(Comment, Post.id == Comment.post_id)
+            .group_by(Post.id)
             .offset(skip)
             .limit(limit)
             .all()
         )
 
-    def get_post_by_id(self, post_id: int) -> Post | None:
+        # Post 객체에 comment_count 추가
+        posts = []
+        for post, count in results:
+            post.comment_count = count
+            posts.append(post)
+
+        return posts
+
+    def get_post_by_id(self, post_id: int, increment_view: bool = True) -> Post | None:
         """ID로 게시글 조회 (조회수 증가)
 
         Args:
             post_id (int): 게시글 ID
+            increment_view (bool): 조회수 증가 여부 (기본값: True)
 
         Returns:
             Post | None: 게시글 정보 또는 None
@@ -85,9 +100,15 @@ class PostController:
             .filter(Post.id == post_id)
             .first()
         )
-        if post:
+        if post and increment_view:
             post.view_count += 1
-            
+            try:
+                self.db.commit()
+                self.db.refresh(post)
+            except SQLAlchemyError:
+                self.db.rollback()
+                raise RuntimeError("조회수 업데이트 중 오류가 발생했습니다")
+
         return post
 
     def update_post(
@@ -109,8 +130,7 @@ class PostController:
         Raises:
             ValueError: 작성자가 아닌 경우
         """
-        post = self.get_post_by_id(post_id)
-        
+        post = self.get_post_by_id(post_id, increment_view=False)
         if not post:
             return None
 
@@ -155,8 +175,7 @@ class PostController:
         Raises:
             ValueError: 작성자가 아닌 경우
         """
-        post = self.get_post_by_id(post_id)
-        
+        post = self.get_post_by_id(post_id, increment_view=False)
         if not post:
             return None
 
