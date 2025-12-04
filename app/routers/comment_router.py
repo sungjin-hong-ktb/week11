@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Body
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -11,11 +11,11 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=Comment, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=Comment, status_code=status.HTTP_201_CREATED, description="새로운 댓글 작성")
 def create_comment(
     comment_data: CommentCreate,
-    post_id: int,
-    author_id: int,
+    post_id: int = Query(..., description="게시글 ID"),
+    author_id: int = Query(..., description="작성자 ID"),
     db: Session = Depends(get_db)
 ):
     """댓글 생성
@@ -33,11 +33,11 @@ def create_comment(
     return controller.create_comment(comment_data, post_id, author_id)
 
 
-@router.get("/", response_model=list[Comment])
+@router.get("/", response_model=list[Comment], description="특정 게시글의 댓글 목록 조회")
 def get_comments(
-    post_id: int,
-    skip: int = Query(0, ge=0),
-    limit: int = Query(10, ge=1, le=100),
+    post_id: int = Query(..., description="게시글 ID"),
+    skip: int = Query(0, ge=0, description="건너뛸 개수"),
+    limit: int = Query(10, ge=1, le=100, description="최대 조회 개수"),
     db: Session = Depends(get_db)
 ):
     """게시글의 모든 댓글 조회
@@ -55,9 +55,9 @@ def get_comments(
     return controller.get_comments_by_post(post_id, skip, limit)
 
 
-@router.get("/{comment_id}", response_model=Comment)
+@router.get("/{comment_id}", response_model=Comment, description="특정 댓글 조회")
 def get_comment(
-    comment_id: int,
+    comment_id: int = Path(..., description="조회할 댓글 ID"),
     db: Session = Depends(get_db)
 ):
     """댓글 조회
@@ -82,11 +82,11 @@ def get_comment(
     return comment
 
 
-@router.put("/{comment_id}", response_model=Comment)
+@router.put("/{comment_id}", response_model=Comment, description="댓글 수정 (작성자만 가능)")
 def update_comment(
-    comment_id: int,
-    comment_data: CommentUpdate,
-    author_id: int,
+    comment_id: int = Path(..., description="수정할 댓글 ID"),
+    comment_data: CommentUpdate = Body(...),
+    author_id: int = Query(..., description="작성자 ID (권한 확인용)"),
     db: Session = Depends(get_db)
 ):
     """댓글 수정
@@ -119,10 +119,10 @@ def update_comment(
         )
 
 
-@router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT, description="댓글 삭제 (작성자만 가능)")
 def delete_comment(
-    comment_id: int,
-    author_id: int,
+    comment_id: int = Path(..., description="삭제할 댓글 ID"),
+    author_id: int = Query(..., description="작성자 ID (권한 확인용)"),
     db: Session = Depends(get_db)
 ):
     """댓글 삭제

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Body
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -11,10 +11,10 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=Post, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=Post, status_code=status.HTTP_201_CREATED, description="새로운 게시글 작성")
 def create_post(
     post_data: PostCreate,
-    author_id: int,
+    author_id: int = Query(..., description="작성자 ID"),
     db: Session = Depends(get_db)
 ):
     """게시글 생성
@@ -31,10 +31,10 @@ def create_post(
     return controller.create_post(post_data, author_id)
 
 
-@router.get("/", response_model=list[Post])
+@router.get("/", response_model=list[Post], description="게시글 목록 조회 (댓글 개수 포함)")
 def get_posts(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(10, ge=1, le=100),
+    skip: int = Query(0, ge=0, description="건너뛸 개수"),
+    limit: int = Query(10, ge=1, le=100, description="최대 조회 개수"),
     db: Session = Depends(get_db)
 ):
     """모든 게시글 조회
@@ -51,9 +51,9 @@ def get_posts(
     return controller.get_posts(skip, limit)
 
 
-@router.get("/{post_id}", response_model=PostDetail)
+@router.get("/{post_id}", response_model=PostDetail, description="게시글 상세 조회 (댓글 포함, 조회수 증가)")
 def get_post(
-    post_id: int,
+    post_id: int = Path(..., description="조회할 게시글 ID"),
     db: Session = Depends(get_db)
 ):
     """게시글 상세 조회 (댓글 포함, 조회수 증가)
@@ -78,11 +78,11 @@ def get_post(
     return post
 
 
-@router.put("/{post_id}", response_model=Post)
+@router.put("/{post_id}", response_model=Post, description="게시글 수정 (작성자만 가능)")
 def update_post(
-    post_id: int,
-    post_data: PostUpdate,
-    author_id: int,
+    post_id: int = Path(..., description="수정할 게시글 ID"),
+    post_data: PostUpdate = Body(...),
+    author_id: int = Query(..., description="작성자 ID (권한 확인용)"),
     db: Session = Depends(get_db)
 ):
     """게시글 수정
@@ -115,10 +115,10 @@ def update_post(
         )
 
 
-@router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT, description="게시글 삭제 (작성자만 가능)")
 def delete_post(
-    post_id: int,
-    author_id: int,
+    post_id: int = Path(..., description="삭제할 게시글 ID"),
+    author_id: int = Query(..., description="작성자 ID (권한 확인용)"),
     db: Session = Depends(get_db)
 ):
     """게시글 삭제
