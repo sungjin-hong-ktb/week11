@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.models.comment_model import Comment
-from app.controllers.post_controller import PostController
 from app.controllers.user_controller import UserController
 from app.schemas.comment_schema import CommentCreate, CommentUpdate
 
@@ -154,7 +153,6 @@ class CommentController:
             ValueError: 작성자가 아닌 경우
         """
         comment = self.get_comment_by_id(comment_id)
-        
         if not comment:
             return None
 
