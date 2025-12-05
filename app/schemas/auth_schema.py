@@ -1,9 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
-
-
-class LoginRequest(BaseModel):
-    email: EmailStr = Field(description="이메일 주소")
-    password: str = Field(description="비밀번호")
+from pydantic import BaseModel, Field
 
 
 class LoginResponse(BaseModel):

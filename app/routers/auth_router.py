@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.auth_schema import LoginRequest, LoginResponse
+from app.schemas.auth_schema import LoginResponse
 from app.controllers.auth_controller import AuthController
 
 router = APIRouter(
@@ -14,16 +15,16 @@ router = APIRouter(
 @router.post(
     "/login",
     response_model=LoginResponse,
-    description="이메일과 비밀번호로 로그인"
+    description="OAuth2 표준 폼을 사용한 로그인"
 )
 def login(
-    credentials: LoginRequest,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    """로그인
+    """로그인 (OAuth2 표준)
 
     Args:
-        credentials (LoginRequest): 로그인 정보 (이메일, 비밀번호)
+        form_data (OAuth2PasswordRequestForm): OAuth2 폼 데이터 (username, password)
         db (Session): 데이터베이스 세션
 
     Returns:
@@ -34,7 +35,7 @@ def login(
     """
     try:
         controller = AuthController(db)
-        return controller.login(credentials)
+        return controller.login(form_data.username, form_data.password)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

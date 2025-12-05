@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.user_model import Users
-from app.schemas.auth_schema import LoginRequest, LoginResponse
+from app.schemas.auth_schema import LoginResponse
 from app.utils.security import verify_password
 from app.exceptions import UnauthorizedException
 
@@ -10,22 +10,23 @@ class AuthController:
     def __init__(self, db: Session):
         self.db = db
 
-    def login(self, credentials: LoginRequest) -> LoginResponse:
-        """로그인
+    def login(self, username: str, password: str) -> LoginResponse:
+        """로그인 (OAuth2 표준)
 
         Args:
-            credentials (LoginRequest): 로그인 정보 (이메일, 비밀번호)
+            username (str): 사용자 이메일 (OAuth2에서는 username 필드 사용)
+            password (str): 비밀번호
 
         Returns:
             LoginResponse: 로그인 성공 메시지 및 사용자 정보
 
         Raises:
-            ValueError: 이메일 또는 비밀번호가 잘못된 경우
+            UnauthorizedException: 이메일 또는 비밀번호가 잘못된 경우
         """
-        # 이메일로 사용자 조회
+        # 이메일로 사용자 조회 (OAuth2의 username 필드를 email로 사용)
         user = (
             self.db.query(Users)
-            .filter(Users.email == credentials.email)
+            .filter(Users.email == username)
             .first()
         )
 
@@ -33,7 +34,7 @@ class AuthController:
             raise UnauthorizedException("이메일 또는 비밀번호가 잘못되었습니다")
 
         # 비밀번호 검증
-        if not verify_password(credentials.password, user.hashed_password):
+        if not verify_password(password, user.hashed_password):
             raise UnauthorizedException("이메일 또는 비밀번호가 잘못되었습니다")
 
         return LoginResponse(
