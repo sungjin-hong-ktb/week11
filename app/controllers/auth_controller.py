@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.user_model import Users
 from app.schemas.auth_schema import LoginRequest, LoginResponse
 from app.utils.security import verify_password
+from app.exceptions import UnauthorizedException
 
 
 class AuthController:
@@ -29,11 +30,11 @@ class AuthController:
         )
 
         if not user:
-            raise ValueError("이메일 또는 비밀번호가 잘못되었습니다")
+            raise UnauthorizedException("이메일 또는 비밀번호가 잘못되었습니다")
 
         # 비밀번호 검증
         if not verify_password(credentials.password, user.hashed_password):
-            raise ValueError("이메일 또는 비밀번호가 잘못되었습니다")
+            raise UnauthorizedException("이메일 또는 비밀번호가 잘못되었습니다")
 
         return LoginResponse(
             message="로그인 성공",

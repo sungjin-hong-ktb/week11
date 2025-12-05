@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.models.comment_model import Comment
 from app.controllers.user_controller import UserController
 from app.schemas.comment_schema import CommentCreate, CommentUpdate
+from app.exceptions import NotFoundException, ForbiddenException
+from app.utils.db_utils import db_transaction
 
 
 class CommentController:
@@ -30,25 +31,18 @@ class CommentController:
         user = UserController(self.db).get_user_by_id(author_id)
 
         if not user:
-            raise ValueError("작성자가 존재하지 않습니다")
+            raise NotFoundException("작성자가 존재하지 않습니다")
         
         new_comment = Comment(
             content=comment_data.content,
             post_id=post_id,
             author_id=author_id
         )
-        
-        try:
+
+        with db_transaction(self.db):
             self.db.add(new_comment)
-            self.db.commit()
-            self.db.refresh(new_comment)
-        except IntegrityError:
-            self.db.rollback()
-            raise ValueError("유효하지 않은 데이터입니다")
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise RuntimeError("데이터베이스 오류가 발생했습니다")
-        
+
+        self.db.refresh(new_comment)
         return new_comment
 
     def get_comments_by_post(
@@ -110,28 +104,22 @@ class CommentController:
         Raises:
             ValueError: 작성자가 아닌 경우
         """
+        # 댓글 존재 확인
         comment = self.get_comment_by_id(comment_id)
-
         if not comment:
             return None
         
         # 작성자 확인
         if comment.author_id != author_id:
-            raise ValueError("댓글 수정 권한이 없습니다")
+            raise ForbiddenException("댓글 수정 권한이 없습니다")
 
         if comment_data.content:
             comment.content = comment_data.content
-            
-        try:
-            self.db.commit()
-            self.db.refresh(comment)
-        except IntegrityError:
-            self.db.rollback()
-            raise ValueError("유효하지 않은 데이터입니다")
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise RuntimeError("데이터베이스 오류가 발생했습니다")
-        
+
+        with db_transaction(self.db):
+            pass  # commit만 수행
+
+        self.db.refresh(comment)
         return comment
 
     def delete_comment(
@@ -151,22 +139,16 @@ class CommentController:
         Raises:
             ValueError: 작성자가 아닌 경우
         """
+        # 댓글 존재 확인
         comment = self.get_comment_by_id(comment_id)
         if not comment:
             return None
 
         # 작성자 확인
         if comment.author_id != author_id:
-            raise ValueError("댓글 삭제 권한이 없습니다")
-        
-        try:
+            raise ForbiddenException("댓글 삭제 권한이 없습니다")
+
+        with db_transaction(self.db):
             self.db.delete(comment)
-            self.db.commit()
-        except IntegrityError:
-            self.db.rollback()
-            raise ValueError("유효하지 않은 데이터입니다")
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise RuntimeError("데이터베이스 오류가 발생했습니다")
 
         return comment

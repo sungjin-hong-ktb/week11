@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.models.user_model import Users
 from app.schemas.user_schema import UserCreate, UserUpdate
 from app.utils.security import hash_password
+from app.exceptions import AlreadyExistsException
+from app.utils.db_utils import db_transaction
 
 
 class UserController:
@@ -28,25 +29,18 @@ class UserController:
             .first()
         )
         if existing_email:
-            raise ValueError("이미 사용중인 이메일입니다.")
+            raise AlreadyExistsException("이미 사용중인 이메일입니다.")
 
         new_user = Users(
             email=user_data.email,
             nickname=user_data.nickname,
             hashed_password=hash_password(user_data.password)
         )
-        
-        try:
-            self.db.add(new_user)
-            self.db.commit()
-            self.db.refresh(new_user)
-        except IntegrityError:
-            self.db.rollback()
-            raise ValueError("유효하지 않은 데이터입니다")
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise RuntimeError("데이터베이스 오류가 발생했습니다")
 
+        with db_transaction(self.db):
+            self.db.add(new_user)
+
+        self.db.refresh(new_user)
         return new_user
 
     def get_users(self) -> list[Users]:
@@ -106,20 +100,14 @@ class UserController:
             )
 
             if existing_nickname:
-                raise ValueError("이미 사용중인 닉네임입니다.")
+                raise AlreadyExistsException("이미 사용중인 닉네임입니다.")
 
             user.nickname = user_data.nickname
 
-        try:
-            self.db.commit()
-            self.db.refresh(user)
-        except IntegrityError:
-            self.db.rollback()
-            raise ValueError("유효하지 않은 데이터입니다")
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise RuntimeError("데이터베이스 오류가 발생했습니다")
-        
+        with db_transaction(self.db):
+            pass  # commit만 수행
+
+        self.db.refresh(user)
         return user
 
     def delete_user(self, user_id: int) -> Users | None:
@@ -134,11 +122,7 @@ class UserController:
         user = self.get_user_by_id(user_id)
         
         if user:
-            try:
+            with db_transaction(self.db):
                 self.db.delete(user)
-                self.db.commit()
-            except SQLAlchemyError:
-                self.db.rollback()
-                raise RuntimeError("데이터베이스 오류가 발생했습니다")
-            
+
         return user
