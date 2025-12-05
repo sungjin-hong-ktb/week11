@@ -190,9 +190,6 @@ uvicorn main:app --reload
 - **Post 삭제** → 관련 Comment 자동 삭제
 
 ## 예외 처리
-
-모든 API 엔드포인트는 전역 예외 핸들러를 통해 일관된 에러 응답을 제공합니다.
-
 ### 커스텀 예외 클래스 (app/exceptions.py)
 
 | 예외 클래스 | 상태 코드 | 설명 |
@@ -266,7 +263,6 @@ uvicorn main:app --reload
 - **Context Manager 패턴**: `db_transaction()` 사용으로 안전한 트랜잭션 처리
 - **자동 롤백**: 예외 발생 시 자동으로 롤백
 - **에러 변환**: `IntegrityError`는 `InvalidDataException`으로, 기타 DB 에러는 `DatabaseException`으로 변환
-
 ```python
 # 사용 예시
 with db_transaction(self.db):
