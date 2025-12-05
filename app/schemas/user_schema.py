@@ -2,17 +2,17 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 import re
 
 class User(BaseModel):
-    id: int
-    email: EmailStr
-    nickname: str
+    id: int = Field(description="사용자 ID")
+    email: EmailStr = Field(description="이메일 주소")
+    nickname: str = Field(description="닉네임")
 
     model_config: ConfigDict = ConfigDict(from_attributes=True)
 
 class UserCreate(BaseModel):
-    email: EmailStr
-    nickname: str = Field(..., min_length=1, max_length=10)
-    password: str = Field(..., min_length=8, max_length=20)
-    password_confirm: str = Field(..., min_length=8, max_length=20)
+    email: EmailStr = Field(description="이메일 주소")
+    nickname: str = Field(..., min_length=1, max_length=10, description="닉네임")
+    password: str = Field(..., min_length=8, max_length=20, description="비밀번호")
+    password_confirm: str = Field(..., min_length=8, max_length=20, description="비밀번호 확인")
 
     # Password 유효성 검사 (대문자, 소문자, 숫자, 특수문자 각각 최소 1개 포함 여부 검사)
     @field_validator('password')
@@ -41,4 +41,4 @@ class UserCreate(BaseModel):
         return v
 
 class UserUpdate(BaseModel):
-    nickname: str | None = Field(None, min_length=1, max_length=10)
+    nickname: str | None = Field(None, min_length=1, max_length=10, description="닉네임")
