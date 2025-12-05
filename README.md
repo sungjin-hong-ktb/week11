@@ -52,7 +52,7 @@ assignment/
 ## 주요 기능
 
 ### 인증 (Auth)
-- 로그인 (이메일, 비밀번호)
+- 로그인 (OAuth2 표준 폼 방식, username=이메일, password)
 - 로그아웃
 
 ### 사용자 (Users)
@@ -129,7 +129,7 @@ uvicorn main:app --reload
 ## API 엔드포인트
 
 ### Auth
-- `POST /auth/login` - 로그인
+- `POST /auth/login` - 로그인 (OAuth2 표준 폼 방식)
 - `POST /auth/logout` - 로그아웃
 
 ### Users
@@ -235,8 +235,9 @@ uvicorn main:app --reload
 - **비밀번호 확인**: 비밀번호와 일치 여부 검증
 
 ### 로그인
-- **이메일**: 유효한 이메일 형식
-- **비밀번호**: Argon2를 통한 해시 비교
+- **username**: 이메일 주소 (OAuth2 표준 필드명)
+- **password**: Argon2를 통한 해시 비교
+- **Content-Type**: `application/x-www-form-urlencoded` (OAuth2 표준 폼 방식)
 
 ### 게시글
 - **제목**: 1~100자
