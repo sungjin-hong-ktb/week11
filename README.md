@@ -39,8 +39,10 @@ assignment/
 │   │   ├── post_schema.py
 │   │   └── comment_schema.py
 │   ├── utils/                # 유틸리티
-│   │   └── security.py       # 비밀번호 해싱/검증
-│   └── database.py           # 데이터베이스 연결
+│   │   ├── security.py       # 비밀번호 해싱/검증
+│   │   └── db_utils.py       # DB 트랜잭션 헬퍼
+│   ├── database.py           # 데이터베이스 연결
+│   └── exceptions.py         # 커스텀 예외 클래스
 ├── alembic/                  # 마이그레이션 파일
 ├── main.py                   # 애플리케이션 진입점
 ├── requirements.txt
@@ -189,18 +191,43 @@ uvicorn main:app --reload
 
 ## 예외 처리
 
-모든 API 엔드포인트는 적절한 HTTP 상태 코드와 함께 예외를 처리합니다:
+모든 API 엔드포인트는 전역 예외 핸들러를 통해 일관된 에러 응답을 제공합니다.
+
+### 커스텀 예외 클래스 (app/exceptions.py)
+
+| 예외 클래스 | 상태 코드 | 설명 |
+|------------|----------|------|
+| `NotFoundException` | 404 | 리소스를 찾을 수 없을 때 |
+| `AlreadyExistsException` | 409 | 리소스가 이미 존재할 때 (이메일/닉네임 중복) |
+| `UnauthorizedException` | 401 | 인증 실패 (로그인 실패) |
+| `ForbiddenException` | 403 | 권한 없음 (작성자 불일치) |
+| `InvalidDataException` | 400 | 유효하지 않은 데이터 |
+| `DatabaseException` | 500 | 데이터베이스 오류 |
+
+### HTTP 상태 코드
 
 | 상태 코드 | 설명 | 예시 |
 |----------|------|------|
 | 200 OK | 조회/수정 성공 | GET, PUT 성공 |
 | 201 Created | 생성 성공 | POST 성공 (회원가입, 게시글 작성 등) |
 | 204 No Content | 삭제 성공 | DELETE 성공 |
-| 400 Bad Request | 잘못된 요청 | 이메일/닉네임 중복 |
-| 401 Unauthorized | 인증 실패 | 로그인 실패 (이메일/비밀번호 불일치) |
-| 403 Forbidden | 권한 없음 | 다른 사용자의 게시글 수정 시도 |
-| 404 Not Found | 리소스 없음 | 존재하지 않는 ID 조회 |
+| 400 Bad Request | 잘못된 요청 | InvalidDataException |
+| 401 Unauthorized | 인증 실패 | UnauthorizedException |
+| 403 Forbidden | 권한 없음 | ForbiddenException |
+| 404 Not Found | 리소스 없음 | NotFoundException |
+| 409 Conflict | 리소스 충돌 | AlreadyExistsException |
 | 422 Unprocessable Entity | 검증 실패 | 비밀번호 규칙 위반, 필수 필드 누락 |
+| 500 Internal Server Error | 서버 오류 | DatabaseException, SQLAlchemyError |
+
+### 에러 응답 형식
+
+```json
+{
+  "error": "NotFoundException",
+  "message": "리소스를 찾을 수 없습니다",
+  "path": "/api/users/999"
+}
+```
 
 ## 데이터 검증
 
@@ -224,10 +251,28 @@ uvicorn main:app --reload
 
 ## 아키텍처
 
+### 계층 구조
+- **Router → Controller → Model**: 명확한 역할 분리
 - **OOP 기반 Controller**: 모든 컨트롤러를 클래스로 구현
-- **계층 분리**: Router → Controller → Model
 - **의존성 주입**: FastAPI Depends를 통한 DB 세션 관리
 - **RESTful API**: 리소스 간 계층적 관계를 URL로 표현 (`/posts/{id}/comments`)
+
+### 예외 처리 전략
+- **전역 예외 핸들러**: main.py에서 모든 커스텀 예외를 중앙 집중식으로 처리
+- **계층별 예외 변환**: SQLAlchemy 예외를 애플리케이션 예외로 변환
+- **일관된 에러 응답**: 모든 에러는 동일한 JSON 형식으로 반환
+
+### 데이터베이스 트랜잭션 관리
+- **Context Manager 패턴**: `db_transaction()` 사용으로 안전한 트랜잭션 처리
+- **자동 롤백**: 예외 발생 시 자동으로 롤백
+- **에러 변환**: `IntegrityError`는 `InvalidDataException`으로, 기타 DB 에러는 `DatabaseException`으로 변환
+
+```python
+# 사용 예시
+with db_transaction(self.db):
+    self.db.add(new_user)
+# 자동 commit 또는 예외 발생 시 자동 rollback
+```
 
 ## 개발 환경
 
