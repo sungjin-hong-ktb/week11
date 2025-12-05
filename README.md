@@ -254,22 +254,6 @@ uvicorn main:app --reload
 - **의존성 주입**: FastAPI Depends를 통한 DB 세션 관리
 - **RESTful API**: 리소스 간 계층적 관계를 URL로 표현 (`/posts/{id}/comments`)
 
-### 예외 처리 전략
-- **전역 예외 핸들러**: main.py에서 모든 커스텀 예외를 중앙 집중식으로 처리
-- **계층별 예외 변환**: SQLAlchemy 예외를 애플리케이션 예외로 변환
-- **일관된 에러 응답**: 모든 에러는 동일한 JSON 형식으로 반환
-
-### 데이터베이스 트랜잭션 관리
-- **Context Manager 패턴**: `db_transaction()` 사용으로 안전한 트랜잭션 처리
-- **자동 롤백**: 예외 발생 시 자동으로 롤백
-- **에러 변환**: `IntegrityError`는 `InvalidDataException`으로, 기타 DB 에러는 `DatabaseException`으로 변환
-```python
-# 사용 예시
-with db_transaction(self.db):
-    self.db.add(new_user)
-# 자동 commit 또는 예외 발생 시 자동 rollback
-```
-
 ## 개발 환경
 
 - Python 3.13+
