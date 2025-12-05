@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.routers import user_router, post_router, comment_router, auth_router
+from app.exceptions import AppException
 
 app = FastAPI(
     title="Community API",
@@ -10,18 +11,26 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.__class__.__name__,
+            "message": exc.message,
+            "path": request.url.path
+        }
+    )
+
 @app.exception_handler(SQLAlchemyError)
 async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
     return JSONResponse(
         status_code=500,
-        content={"detail": "데이터베이스 오류가 발생했습니다"},
-    )
-
-@app.exception_handler(RuntimeError)
-async def runtime_exception_handler(request: Request, exc: RuntimeError):
-    return JSONResponse(
-        status_code=500,
-        content={"detail": str(exc)},
+        content={
+            "error": "DatabaseError",
+            "message": "데이터베이스 오류가 발생했습니다",
+            "path": request.url.path
+        }
     )
 
 app.include_router(auth_router.router)
