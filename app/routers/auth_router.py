@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.auth_schema import LoginResponse
 from app.controllers.auth_controller import AuthController
+from app.exceptions import UnauthorizedException
 
 router = APIRouter(
     prefix="/auth",
@@ -36,10 +37,10 @@ def login(
     try:
         controller = AuthController(db)
         return controller.login(form_data.username, form_data.password)
-    except ValueError as e:
+    except UnauthorizedException as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e)
+            detail=e.message
         )
 
 
